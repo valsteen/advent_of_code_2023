@@ -2,7 +2,7 @@ use std::collections::HashSet;
 use std::io::{stdin, BufRead};
 
 struct Number {
-    number: u32,
+    n: u32,
     x: usize,
     y: usize,
 }
@@ -11,7 +11,7 @@ impl Number {
     fn neighbours(&self) -> impl Iterator<Item = (usize, usize)> + '_ {
         let x: i32 = self.x.try_into().unwrap();
         let y: i32 = self.y.try_into().unwrap();
-        let len: i32 = (self.number.ilog10() as usize + 1).try_into().unwrap();
+        let len: i32 = (self.n.ilog10() as usize + 1).try_into().unwrap();
 
         let top = ((x - 1)..=(x + len)).map(move |x| (x, y - 1));
         let bottom = ((x - 1)..=(x + len)).map(move |x| (x, y + 1));
@@ -29,7 +29,7 @@ fn main() {
     let mut symbols = HashSet::new();
 
     let numbers: Vec<_> = lines
-        .flatten()
+        .map_while(Result::ok)
         .enumerate()
         .flat_map(|(y, line)| {
             for (x, c) in line.as_bytes().iter().enumerate() {
@@ -42,7 +42,7 @@ fn main() {
             line.split_terminator(|c: char| !c.is_ascii_digit())
                 .filter_map(|l| {
                     let result = match l.parse::<u32>() {
-                        Ok(number) => Some(Number { number, x, y }),
+                        Ok(number) => Some(Number { n: number, x, y }),
                         Err(_) => None,
                     };
                     x += l.len() + 1;
@@ -55,7 +55,7 @@ fn main() {
         acc + number
             .neighbours()
             .any(|(x, y)| symbols.contains(&(x, y)))
-            .then_some(number.number)
+            .then_some(number.n)
             .unwrap_or_default()
     });
     println!("{sum}");

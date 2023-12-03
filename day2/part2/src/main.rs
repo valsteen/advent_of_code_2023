@@ -11,7 +11,7 @@ enum Color {
 
 fn main() -> Result<(), Box<dyn Error>> {
     let lines = stdin().lock().lines();
-    let sum = lines.flatten().try_fold(0, |acc, line| {
+    let sum = lines.map_while(Result::ok).try_fold(0, |acc, line| {
         let (_, line) = line.split_once(": ").ok_or_else(|| format!("Malformed line: {line}"))?;
         let mut maxes = HashMap::<_, u64>::new();
         for hand in line.split("; ") {

@@ -89,7 +89,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         .collect();
 
     let lines = stdin().lock().lines();
-    let sum = lines.flatten().try_fold(0, |acc, line| {
+    let sum = lines.map_while(Result::ok).try_fold(0, |acc, line| {
         let mut patterns = Finder::<Vec<u8>, _>::new(numbers.as_slice(), line.as_bytes());
         let first = patterns.next().ok_or_else(|| format!("No match in '{line}'"))? % 9 + 1;
         let last = patterns.last().map_or(first, |found| found % 9 + 1);
