@@ -1,4 +1,5 @@
 use std::error::Error;
+use std::io::{stdin, BufRead};
 
 struct CategoryMap {
     source_start: u64,
@@ -37,7 +38,8 @@ impl Converter for ConversionMap {
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let mut lines = include_str!("../../input_real.txt").lines();
+    let lines = stdin().lock().lines();
+    let mut lines = lines.map_while(Result::ok);
     let seeds = lines
         .next()
         .ok_or("missing first line")?
@@ -63,7 +65,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                     conversions.push(this_conversion);
                     break 'main;
                 }
-                Some("") => {
+                Some(line) if line.is_empty() => {
                     conversions.push(this_conversion);
                     break;
                 }
