@@ -1,0 +1,10 @@
+[package]
+name = "day7part1"
+version = "0.1.0"
+edition = "2021"
+
+[lints]
+workspace = true
+
+[dependencies]
+sort_by_derive = "0.1.16"
