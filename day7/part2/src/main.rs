@@ -5,6 +5,7 @@ use std::io::{stdin, BufRead};
 
 #[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Debug)]
 enum Card {
+    J,
     Card2,
     Card3,
     Card4,
@@ -14,7 +15,6 @@ enum Card {
     Card8,
     Card9,
     T,
-    J,
     Q,
     K,
     A,
@@ -75,8 +75,16 @@ impl CmpHand for Hand {
 impl TryFrom<Hand> for HandType {
     type Error = ();
 
-    fn try_from(mut hand: Hand) -> Result<Self, Self::Error> {
+    fn try_from(hand: Hand) -> Result<Self, Self::Error> {
+        let mut hand = hand.to_vec();
+        hand.retain(|card| *card != Card::J);
+        let js = 5 - hand.len();
+        if js == 5 {
+            return Ok(HandType::FiveOfAKind(Card::J));
+        }
+
         hand.sort_unstable();
+
         let mut groups = hand.into_iter().fold(Vec::<HandType>::new(), |mut groups, next_card| {
             match groups.last().copied() {
                 Some(HandType::FourOfAKind(card)) if card == next_card => {
@@ -96,11 +104,27 @@ impl TryFrom<Hand> for HandType {
             groups
         });
         groups.sort_unstable();
-        match (groups.pop().unwrap(), groups.pop()) {
-            (HandType::ThreeOfAKind(highest), Some(HandType::Pair(second))) => Ok(HandType::FullHouse(highest, second)),
-            (HandType::Pair(highest), Some(HandType::Pair(second))) => Ok(HandType::TwoPair(highest, second)),
-            (HandType::Card(_), _) => Err(()),
-            (hand, _) => Ok(hand),
+        let hand_type = match (groups.pop().unwrap(), groups.pop()) {
+            (HandType::ThreeOfAKind(highest), Some(HandType::Pair(second))) => HandType::FullHouse(highest, second),
+            (HandType::Pair(highest), Some(HandType::Pair(second))) => HandType::TwoPair(highest, second),
+            (hand, _) => hand,
+        };
+
+        let hand_type = (0..js).fold(hand_type, |hand_type, _| {
+            let up = match hand_type {
+                HandType::Card(x) => HandType::Pair(x),
+                HandType::Pair(x) => HandType::ThreeOfAKind(x),
+                HandType::TwoPair(x, y) => HandType::FullHouse(x, y),
+                HandType::ThreeOfAKind(x) => HandType::FourOfAKind(x),
+                HandType::FourOfAKind(x) => HandType::FiveOfAKind(x),
+                HandType::FiveOfAKind(_) | HandType::FullHouse(_, _) => unreachable!(),
+            };
+            println!("Up: {hand_type:?} {up:?}");
+            up
+        });
+        match hand_type {
+            HandType::Card(_) => Err(()),
+            _ => Ok(hand_type),
         }
     }
 }
@@ -124,7 +148,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         Ok::<_, Box<dyn Error>>(result)
     })?;
 
-    game.sort_by(|hand1, hand2| CmpHand::cmp(&Hand::from(hand1.0), &Hand::from(hand2.0)));
+    game.sort_by(|hand1, hand2| CmpHand::cmp(&hand1.0, &hand2.0));
 
     let sum = game
         .into_iter()
