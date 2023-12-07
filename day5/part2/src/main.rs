@@ -8,11 +8,13 @@ struct CategoryMap {
 }
 
 impl CategoryMap {
+    #[allow(clippy::unnecessary_lazy_evaluations)]
     fn convert(&self, number: u64) -> Option<u64> {
         (self.source_start..self.source_start + self.len)
             .contains(&number)
             .then(|| self.destination_start + number - self.source_start)
     }
+    #[allow(clippy::unnecessary_lazy_evaluations)]
     fn reverse_convert(&self, number: u64) -> Option<u64> {
         (self.destination_start..self.destination_start + self.len)
             .contains(&number)

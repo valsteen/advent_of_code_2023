@@ -8,6 +8,7 @@ struct CategoryMap {
 }
 
 impl CategoryMap {
+    #[allow(clippy::unnecessary_lazy_evaluations)]
     fn convert(&self, number: u64) -> Option<u64> {
         (self.source_start..self.source_start + self.len)
             .contains(&number)
