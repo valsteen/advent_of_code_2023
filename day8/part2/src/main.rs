@@ -11,16 +11,16 @@ enum Direction {
 }
 
 #[derive(Debug)]
-struct Destinations {
-    l: String,
-    r: String,
+struct Destinations<'a> {
+    l: &'a str,
+    r: &'a str,
 }
 
-impl From<String> for Destinations {
-    fn from(value: String) -> Self {
+impl<'a> From<&'a str> for Destinations<'a> {
+    fn from(value: &'a str) -> Self {
         Destinations {
-            l: value[7..=9].to_string(),
-            r: value[12..=14].to_string(),
+            l: &value[7..=9],
+            r: &value[12..=14],
         }
     }
 }
@@ -53,9 +53,8 @@ impl Node for &str {
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let lines = stdin().lock().lines();
-    let mut lines = lines.map_while(Result::ok);
-
+    let input = stdin().lock().lines().map_while(Result::ok).collect::<Vec<_>>();
+    let mut lines = input.iter();
     let directions_list = lines
         .next()
         .ok_or("expected directions line")?
@@ -66,16 +65,15 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let destinations = lines
         .map(|line| {
-            let source = line[0..3].to_string();
-            let destinations = Destinations::try_from(line)?;
+            let source = &line[0..3];
+            let destinations = Destinations::try_from(line.as_str())?;
             Ok::<_, Box<dyn Error>>((source, destinations))
         })
         .collect::<Result<HashMap<_, _>, _>>()?;
 
     let origins = destinations
         .keys()
-        .filter(|key| key.as_str().is_start())
-        .map(String::as_str)
+        .filter_map(|key| key.is_start().then_some(*key))
         .collect::<Vec<&str>>();
 
     let steps = origins
