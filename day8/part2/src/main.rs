@@ -12,15 +12,15 @@ enum Direction {
 
 #[derive(Debug)]
 struct Destinations {
-    l: &'static str,
-    r: &'static str,
+    l: String,
+    r: String,
 }
 
 impl From<String> for Destinations {
     fn from(value: String) -> Self {
         Destinations {
-            l: value[7..=9].to_string().leak(),
-            r: value[12..=14].to_string().leak(),
+            l: value[7..=9].to_string(),
+            r: value[12..=14].to_string(),
         }
     }
 }
@@ -66,7 +66,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let destinations = lines
         .map(|line| {
-            let source = &*line[0..3].to_string().leak();
+            let source = line[0..3].to_string();
             let destinations = Destinations::try_from(line)?;
             Ok::<_, Box<dyn Error>>((source, destinations))
         })
@@ -74,11 +74,9 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let origins = destinations
         .keys()
-        .filter_map(|key| {
-            let key = &(**key);
-            Node::is_start(&key).then_some(key)
-        })
-        .collect::<Vec<&'static str>>();
+        .filter(|key| key.as_str().is_start())
+        .map(String::as_str)
+        .collect::<Vec<&str>>();
 
     let steps = origins
         .par_iter()
@@ -92,8 +90,8 @@ fn main() -> Result<(), Box<dyn Error>> {
 
                 let destination = destinations.get(origin).unwrap();
                 origin = match direction {
-                    Direction::L => destination.l,
-                    Direction::R => destination.r,
+                    Direction::L => &destination.l,
+                    Direction::R => &destination.r,
                 };
 
                 step += 1;
