@@ -96,18 +96,19 @@ fn main() -> Result<(), Box<dyn Error>> {
             }
             step
         })
-        .collect::<Vec<_>>()
-        .into_iter()
-        .fold(1u64, |acc, step| {
-            acc * step
-                / match (0..).try_fold((acc, step), |(acc, step), _| match acc % step {
+        .reduce(
+            || 1u64,
+            |acc, step| {
+                let ControlFlow::Break(lcm) = (0..).try_fold((acc, step), |(acc, step), _| match acc % step {
                     0 => ControlFlow::Break(step),
                     x => ControlFlow::Continue((step, x)),
-                }) {
-                    ControlFlow::Continue(_) => unreachable!(),
-                    ControlFlow::Break(lcm) => lcm,
-                }
-        });
+                }) else {
+                    unreachable!()
+                };
+
+                acc * step / lcm
+            },
+        );
 
     println!("{steps}");
 
