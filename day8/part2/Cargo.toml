@@ -8,4 +8,3 @@ workspace = true
 
 [dependencies]
 rayon = "1.8.0"
-prime_factorization = "1.0.4"

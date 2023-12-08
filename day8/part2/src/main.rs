@@ -1,8 +1,8 @@
-use prime_factorization::Factorization;
 use rayon::prelude::*;
 use std::collections::HashMap;
 use std::error::Error;
 use std::io::{stdin, BufRead};
+use std::ops::ControlFlow;
 
 #[derive(Debug, Copy, Clone)]
 enum Direction {
@@ -80,19 +80,18 @@ fn main() -> Result<(), Box<dyn Error>> {
         })
         .collect::<Vec<&'static str>>();
 
-    let steps: u128 = origins
+    let steps = origins
         .par_iter()
         .map(|&origin| {
             let mut origin = origin;
             let mut cycle = directions_list.iter().cycle();
-            let mut step = 0u128;
+            let mut step = 0u64;
 
             loop {
                 let direction = cycle.next().unwrap();
                 if origin.is_end() {
-                    break Factorization::run(step).factors.into_iter().collect::<Vec<_>>();
+                    break step;
                 }
-
                 let destination = destinations.get(origin).unwrap();
                 origin = match direction {
                     Direction::L => destination.l,
@@ -104,19 +103,16 @@ fn main() -> Result<(), Box<dyn Error>> {
         })
         .collect::<Vec<_>>()
         .into_iter()
-        .fold(Vec::<u128>::new(), |mut acc, primes| {
-            let mut usable = acc.clone();
-            for prime in primes {
-                if let Some(pos) = usable.iter().position(|found_prime| prime == *found_prime) {
-                    usable.remove(pos);
-                } else {
-                    acc.push(prime);
+        .fold(1u64, |acc, step| {
+            acc * step
+                / match (0..).try_fold((acc, step), |(acc, step), _| match acc % step {
+                    0 => ControlFlow::Break(step),
+                    x => ControlFlow::Continue((step, x)),
+                }) {
+                    ControlFlow::Continue(_) => unreachable!(),
+                    ControlFlow::Break(lcm) => lcm,
                 }
-            }
-            acc
-        })
-        .into_iter()
-        .product();
+        });
 
     println!("{steps}");
 

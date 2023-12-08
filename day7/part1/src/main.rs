@@ -124,7 +124,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         Ok::<_, Box<dyn Error>>(result)
     })?;
 
-    game.sort_by(|hand1, hand2| CmpHand::cmp(&Hand::from(hand1.0), &Hand::from(hand2.0)));
+    game.sort_by(|hand1, hand2| CmpHand::cmp(&hand1.0, &hand2.0));
 
     let sum = game
         .into_iter()
