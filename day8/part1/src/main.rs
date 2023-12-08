@@ -10,15 +10,15 @@ enum Direction {
 
 #[derive(Debug)]
 struct Destinations {
-    L: String,
-    R: String,
+    l: String,
+    r: String,
 }
 
 impl From<String> for Destinations {
     fn from(value: String) -> Self {
         Destinations {
-            L: value[7..=9].to_string(),
-            R: value[12..=14].to_string(),
+            l: value[7..=9].to_string(),
+            r: value[12..=14].to_string(),
         }
     }
 }
@@ -34,8 +34,6 @@ impl TryFrom<char> for Direction {
         })
     }
 }
-
-type Map<'a> = HashMap<&'a str, (&'a str, &'a str)>;
 
 fn main() -> Result<(), Box<dyn Error>> {
     let lines = stdin().lock().lines();
@@ -68,8 +66,8 @@ fn main() -> Result<(), Box<dyn Error>> {
         let direction = cycle.next().unwrap();
         let destination = destinations.get(origin.as_str()).unwrap();
         origin = match direction {
-            Direction::L => destination.L.clone(),
-            Direction::R => destination.R.clone(),
+            Direction::L => destination.l.clone(),
+            Direction::R => destination.r.clone(),
         };
         step += 1;
     }

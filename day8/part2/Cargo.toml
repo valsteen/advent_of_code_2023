@@ -1,0 +1,11 @@
+[package]
+name = "day8part2"
+version = "0.1.0"
+edition = "2021"
+
+[lints]
+workspace = true
+
+[dependencies]
+rayon = "1.8.0"
+prime_factorization = "1.0.4"

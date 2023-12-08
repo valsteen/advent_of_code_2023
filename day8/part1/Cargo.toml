@@ -5,6 +5,3 @@ edition = "2021"
 
 [lints]
 workspace = true
-
-[dependencies]
-sort_by_derive = "0.1.16"
