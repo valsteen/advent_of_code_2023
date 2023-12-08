@@ -59,10 +59,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut origin = "AAA".to_string();
     let mut cycle = directions_list.iter().cycle();
 
-    loop {
-        if origin == "ZZZ" {
-            break;
-        }
+    while origin != "ZZZ" {
         let direction = cycle.next().unwrap();
         let destination = destinations.get(origin.as_str()).unwrap();
         origin = match direction {

@@ -87,11 +87,9 @@ fn main() -> Result<(), Box<dyn Error>> {
             let mut cycle = directions_list.iter().cycle();
             let mut step = 0u64;
 
-            loop {
+            while !origin.is_end() {
                 let direction = cycle.next().unwrap();
-                if origin.is_end() {
-                    break step;
-                }
+
                 let destination = destinations.get(origin).unwrap();
                 origin = match direction {
                     Direction::L => destination.l,
@@ -100,6 +98,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
                 step += 1;
             }
+            step
         })
         .collect::<Vec<_>>()
         .into_iter()
