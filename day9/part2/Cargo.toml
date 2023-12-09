@@ -5,6 +5,3 @@ edition = "2021"
 
 [lints]
 workspace = true
-
-[dependencies]
-rayon = "1.8.0"
