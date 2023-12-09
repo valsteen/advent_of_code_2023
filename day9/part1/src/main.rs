@@ -7,7 +7,7 @@ fn resolve(numbers: &[i64]) -> Option<i64> {
             + match (0..numbers.len() - 1).fold(
                 (true, Vec::with_capacity(numbers.len() - 1)),
                 |(zeroes, mut acc), i| {
-                    let result = numbers[i+1] - numbers[i];
+                    let result = numbers[i + 1] - numbers[i];
                     let zeroes = zeroes && result == 0;
                     acc.push(result);
                     (zeroes, acc)
