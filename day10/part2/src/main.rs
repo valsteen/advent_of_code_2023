@@ -1,5 +1,4 @@
-use std::collections::hash_map::Entry;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::error::Error;
 use std::io::{stdin, BufRead};
 use std::iter::repeat;
@@ -197,12 +196,6 @@ impl Map {
     }
 }
 
-#[derive(Copy, Clone, PartialEq)]
-enum Paint {
-    Outside,
-    Circuit,
-}
-
 trait PaintMapTrait {
     fn paint(&mut self, x: i64, y: i64, tile_type: TileType);
 
@@ -213,7 +206,7 @@ trait PaintMapTrait {
     ) -> Result<PaintMapResult, Box<dyn Error>>;
 }
 
-type PaintMap = HashMap<(i64, i64), Paint>;
+type PaintMap = HashSet<(i64, i64)>;
 impl PaintMapTrait for PaintMap {
     fn paint(&mut self, x: i64, y: i64, tile_type: TileType) {
         for (delta_y, row) in tile_type.zoom().into_iter().enumerate() {
@@ -222,7 +215,7 @@ impl PaintMapTrait for PaintMap {
                 let delta_y = i64::try_from(delta_y).unwrap();
                 let (x, y) = (x * 3 + delta_x, y * 3 + delta_y);
                 if occupied {
-                    self.insert((x, y), Paint::Circuit);
+                    self.insert((x, y));
                 }
             }
         }
@@ -315,7 +308,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         })
         .ok_or("cannot guess starting tile type")?;
 
-    let mut painted_map = HashMap::new();
+    let mut painted_map = HashSet::new();
     painted_map.paint(map.start.0, map.start.1, guessed_type);
 
     map.tiles
@@ -327,7 +320,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     } = painted_map.paint_circuit(&map, [(map.start, start_neighbour_1), (map.start, start_neighbour_2)])?;
 
     let mut queue = Vec::from([(min_x, min_y)]);
-    painted_map.insert((min_x, min_y), Paint::Outside);
+    painted_map.insert((min_x, min_y));
 
     while let Some((x, y)) = queue.pop() {
         for (delta_x, delta_y) in [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)] {
@@ -336,8 +329,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             if !(min_x..=max_x).contains(&x) || !(min_y..=max_y).contains(&y) {
                 continue;
             }
-            if let Entry::Vacant(entry) = painted_map.entry((x, y)) {
-                entry.insert(Paint::Outside);
+            if painted_map.insert((x, y)) {
                 queue.push((x, y));
             }
         }
@@ -353,7 +345,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                         (0..3).all(|delta_x| {
                             let x = x + delta_x;
                             let y = y + delta_y;
-                            !painted_map.contains_key(&(x, y))
+                            !painted_map.contains(&(x, y))
                         })
                     })
                 })
