@@ -326,10 +326,10 @@ fn main() -> Result<(), Box<dyn Error>> {
         max: (max_x, max_y),
     } = painted_map.paint_circuit(&map, [(map.start, start_neighbour_1), (map.start, start_neighbour_2)])?;
 
-    let mut queue = Vec::from([(Paint::Outside, min_x, min_y)]);
+    let mut queue = Vec::from([(min_x, min_y)]);
     painted_map.insert((min_x, min_y), Paint::Outside);
 
-    while let Some((paint_with, x, y)) = queue.pop() {
+    while let Some((x, y)) = queue.pop() {
         for (delta_x, delta_y) in [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)] {
             let x = x + delta_x;
             let y = y + delta_y;
@@ -337,8 +337,8 @@ fn main() -> Result<(), Box<dyn Error>> {
                 continue;
             }
             if let Entry::Vacant(entry) = painted_map.entry((x, y)) {
-                entry.insert(paint_with);
-                queue.push((paint_with, x, y));
+                entry.insert(Paint::Outside);
+                queue.push((x, y));
             }
         }
     }
