@@ -9,7 +9,6 @@ fn main() -> Result<(), Box<dyn Error>> {
             Ok(line?
                 .split(',')
                 .map(|s| {
-                    println!("{s}");
                     let mut result = 0usize;
 
                     for c in s.bytes() {
