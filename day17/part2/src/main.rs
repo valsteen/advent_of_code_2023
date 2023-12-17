@@ -1,6 +1,7 @@
 use atomic::AtomicI64;
+use fnv::FnvHashMap;
 use rayon::prelude::*;
-use std::collections::HashMap;
+
 use std::error::Error;
 use std::io::{stdin, BufRead};
 use std::sync::atomic;
@@ -176,7 +177,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let map = &map;
 
-    let best_at: HashMap<(i64, i64, u8, Direction, bool), AtomicI64> = (0..map.len())
+    let best_at: FnvHashMap<(i64, i64, u8, Direction, bool), AtomicI64> = (0..map.len())
         .flat_map(move |y| (0..map[0].len()).map(move |x| (i64::try_from(x).unwrap(), i64::try_from(y).unwrap())))
         .flat_map(|(x, y)| (0..=10).map(move |remaining| (x, y, remaining)))
         .flat_map(|(x, y, remaining)| {

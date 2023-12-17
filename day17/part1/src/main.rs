@@ -1,14 +1,15 @@
 use atomic::AtomicI64;
+use fnv::{FnvHashMap};
 use rayon::prelude::*;
-use std::collections::HashMap;
+
 use std::error::Error;
 use std::io::{stdin, BufRead};
 use std::sync::atomic;
 
 fn parse_map<I, E>(lines: I) -> Result<Vec<Vec<i64>>, Box<dyn Error>>
-    where
-        I: Iterator<Item = Result<String, E>>,
-        E: Error + 'static,
+where
+    I: Iterator<Item = Result<String, E>>,
+    E: Error + 'static,
 {
     lines
         .map(|line| {
@@ -104,19 +105,19 @@ impl State {
                 })
             },
         ]
-            .into_iter()
-            .filter_map(|s| {
-                s.filter(|(_, s)| {
-                    (0..i64::try_from(map.len()).unwrap()).contains(&s.y)
-                        && (0..i64::try_from(map[0].len()).unwrap()).contains(&s.x)
-                })
-                    .map(|(consume, mut state)| {
-                        if consume {
-                            state.heat_loss += map[usize::try_from(state.y).unwrap()][usize::try_from(state.x).unwrap()];
-                        }
-                        state
-                    })
+        .into_iter()
+        .filter_map(|s| {
+            s.filter(|(_, s)| {
+                (0..i64::try_from(map.len()).unwrap()).contains(&s.y)
+                    && (0..i64::try_from(map[0].len()).unwrap()).contains(&s.x)
             })
+            .map(|(consume, mut state)| {
+                if consume {
+                    state.heat_loss += map[usize::try_from(state.y).unwrap()][usize::try_from(state.x).unwrap()];
+                }
+                state
+            })
+        })
     }
 }
 
@@ -176,7 +177,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let map = &map;
 
-    let best_at: HashMap<(i64, i64, u8, Direction, bool), AtomicI64> = (0..map.len())
+    let best_at: FnvHashMap<(i64, i64, u8, Direction, bool), AtomicI64> = (0..map.len())
         .flat_map(move |y| (0..map[0].len()).map(move |x| (i64::try_from(x).unwrap(), i64::try_from(y).unwrap())))
         .flat_map(|(x, y)| [0, 1, 2, 3].into_iter().map(move |remaining| (x, y, remaining)))
         .flat_map(|(x, y, remaining)| {
