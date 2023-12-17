@@ -1,0 +1,10 @@
+[package]
+name = "day17part1"
+version = "0.1.0"
+edition = "2021"
+
+[lints]
+workspace = true
+
+[dependencies]
+rayon = "1.8.0"
