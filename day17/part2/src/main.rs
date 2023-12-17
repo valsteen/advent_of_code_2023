@@ -197,35 +197,43 @@ fn main() -> Result<(), Box<dyn Error>> {
             .drain(..)
             .par_bridge()
             .map(|state| {
-                if usize::try_from(state.x).unwrap() == map[0].len() - 1
-                    && usize::try_from(state.y).unwrap() == map.len() - 1
-                    && !(7..=9).contains(&state.remaining_straight_moves)
-                {
-                    let current = min.fetch_min(state.heat_loss, atomic::Ordering::Relaxed);
-                    if state.heat_loss > current {
-                        return None;
+                let mut queue = Vec::from([state]);
+
+                while let Some(state) = queue.pop() {
+                    if usize::try_from(state.x).unwrap() == map[0].len() - 1
+                        && usize::try_from(state.y).unwrap() == map.len() - 1
+                        && !(7..=9).contains(&state.remaining_straight_moves)
+                    {
+                        let current = min.fetch_min(state.heat_loss, atomic::Ordering::Relaxed);
+                        if state.heat_loss > current {
+                            continue;
+                        }
+                    } else if state.heat_loss >= min.load(atomic::Ordering::Relaxed) {
+                        continue;
                     }
-                } else if state.heat_loss >= min.load(atomic::Ordering::Relaxed) {
-                    return None;
+
+                    let best = best_at
+                        .get(&(
+                            state.x,
+                            state.y,
+                            state.remaining_straight_moves,
+                            state.direction,
+                            state.can_turn,
+                        ))
+                        .unwrap();
+
+                    let min = best.fetch_min(state.heat_loss, atomic::Ordering::Relaxed);
+
+                    if min <= state.heat_loss {
+                        continue;
+                    }
+
+                    queue.extend(state.next(map));
+                    if queue.len() > 50 {
+                        return Some(queue);
+                    }
                 }
-
-                let best = best_at
-                    .get(&(
-                        state.x,
-                        state.y,
-                        state.remaining_straight_moves,
-                        state.direction,
-                        state.can_turn,
-                    ))
-                    .unwrap();
-
-                let min = best.fetch_min(state.heat_loss, atomic::Ordering::Relaxed);
-
-                if min <= state.heat_loss {
-                    return None;
-                }
-
-                Some(state.next(map).collect::<Vec<_>>())
+                None::<Vec<State>>
             })
             .flatten()
             .flatten()
