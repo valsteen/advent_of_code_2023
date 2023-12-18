@@ -1,5 +1,5 @@
 use atomic::AtomicI64;
-use fnv::{FnvHashMap};
+use fnv::FnvHashMap;
 use rayon::prelude::*;
 
 use std::error::Error;
