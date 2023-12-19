@@ -1,0 +1,10 @@
+[package]
+name = "day19part1"
+version = "0.1.0"
+edition = "2021"
+
+[lints]
+workspace = true
+
+[dependencies]
+fnv = "1.0.7"
