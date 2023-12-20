@@ -1,0 +1,12 @@
+[package]
+name = "day20part2"
+version = "0.1.0"
+edition = "2021"
+
+[lints]
+workspace = true
+
+[dependencies]
+fnv = "1.0.7"
+sort_by_derive = "0.1.17"
+num-integer = "0.1.45"
